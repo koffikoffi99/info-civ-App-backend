@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./database/db');
 
@@ -9,16 +8,33 @@ const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 
 // Charger les variables d'environnement
-dotenv.config({ path: './.env' });
+require('dotenv').config({ path: './.env' });
 
 // Connecter à la base de données
 connectDB();
 
 const app = express();
 
+// Configuration CORS avec liste blanche
+const allowedOrigins = [
+    'http://localhost:5173', // pour le développement local
+    'https://mellow-salamander-74a33b.netlify.app' // pour le site en production
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+};
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json()); // Parser le corps des requêtes JSON
-app.use(cors()); // Activer CORS pour toutes les origines (pour le développement)
 
 // Monter les routeurs
 app.use('/api/auth', authRoutes);
